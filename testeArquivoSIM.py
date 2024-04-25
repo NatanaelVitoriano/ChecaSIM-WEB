@@ -1,31 +1,34 @@
 import requests
 import os
 from pathlib import Path
-import urllib
 import json
-from lerArquivosSIM import dataNE, dataCO, dataLI
+import urllib
+from lerArquivosSIM import dataNE, dataCO, dataLI, municipio
 
-# codigoDoMunicipio = '054'
-# myurl = 'https://api-dados-abertos.tce.ce.gov.br/licitacoes?codigo_municipio=' + codigoDoMunicipio + '&data_realizacao_autuacao_licitacao=2010-01-01_2023-12-31'
-# print("Informe o numero do municipio: ")
-# codigoDoMunicipio = str(input())
+contratosNaoExistentes = []
+licitacoesNaoExistentes = []
 
+#Buscando na API
 # try:
-#     rContratos = requests.get(myurl)
-#     # rLicitacao = requests.get('https://api-dados-abertos.tce.ce.gov.br/licitacoes?codigo_municipio=' + codigoDoMunicipio + '&data_realizacao_autuacao_licitacao=2010-01-01_2023-12-31')
+#     rLicitacao = requests.get('https://api-dados-abertos.tce.ce.gov.br/licitacoes?codigo_municipio=' + municipio + '&data_realizacao_autuacao_licitacao=2010-01-01_2030-12-31')
+#     rContratos = requests.get('https://api-dados-abertos.tce.ce.gov.br/contrato?codigo_municipio=' + municipio + '&data_contrato=2010-01-01_2030-12-31&quantidade=0&deslocamento=0')
 # except:
 #     print("Tentando conexao com API TCE...")
 #     try:
-#         rContratos = requests.get(myurl)
-#         # rLicitacao = requests.get('https://api-dados-abertos.tce.ce.gov.br/licitacoes?codigo_municipio=' + codigoDoMunicipio + '&data_realizacao_autuacao_licitacao=2010-01-01_2023-12-31')
+#         rLicitacao = requests.get('https://api-dados-abertos.tce.ce.gov.br/licitacoes?codigo_municipio=' + municipio + '&data_realizacao_autuacao_licitacao=2010-01-01_2030-12-31')
+#         rContratos = requests.get('https://api-dados-abertos.tce.ce.gov.br/contrato?codigo_municipio=' + municipio + '&data_contrato=2010-01-01_2030-12-31&quantidade=0&deslocamento=0')
 #     except:
 #         print("Não foi possivel conectar-se a API.")
 #         os.system("PAUSE")
 #         quit()
         
-contratosNaoExistentes = []
-licitacoesNaoExistentes = []
+# json = rLicitacao.json()
+# listaDeLicitacoes = json['data']
 
+# json = rContratos.json()
+# listaDeContratos = json['data']
+
+#Buscando json local
 with open('C:/Users/Supor/Documents/python/Teste Arquivos SIM/arquivos/contratos.json') as arquivo:
     dados = json.load(arquivo)
 listaDeContratos = dados['data']
@@ -34,11 +37,11 @@ with open('C:/Users/Supor/Documents/python/Teste Arquivos SIM/arquivos/licitacoe
     dados = json.load(arquivo)
 listaDeLicitacoes = dados['data']
 
-for data in dataNE:
+#Checando contrato
+for x, data in enumerate(dataNE, start=1):
     if data[24].replace('"',"") == "":
         continue
     
-    #Checando contrato
     contratoNoSIM = False
     contratoNoArquivoCO = False
     
@@ -53,35 +56,50 @@ for data in dataNE:
                     break
                     
         if contratoNoSIM and contratoNoArquivoCO:
-            print("Contrato " + data[24].replace('"',"") + " duplicado.")
-            break
+            print("Contrato " + data[24].replace('"',"") + " na linha " + str(x) + " do arquivo NE está duplicado.")
             
         elif contratoNoSIM and contratoNoArquivoCO == False:
-            break
+            print("Contrato " + data[24].replace('"',"") + " na linha " + str(x) + " do arquivo NE não esta no arquivo CO")
         
         elif contratoNoSIM == False and contratoNoArquivoCO == False:
-            print("Contrato " + data[24].replace('"',"") + " invalido no arquivo CO.")
-            break
+            print("Contrato " + data[24].replace('"',"") + " na linha " + str(x) + " invalido no arquivo CO.")
             
         elif contratoNoSIM == False and contratoNoArquivoCO == True:
             print("Contrato " + data[24].replace('"',"") + " OK.")
+            
+        break
+        
+# Checando Licitacao
+
+for x, ctCO in enumerate(dataCO, start= 1):
+    if ctCO[20].replace('"',"") == "":
+        continue
+    licitacaoNoSIM = False
+    licitacaoNoArquivoLI = False
+    while True:
+        
+        for licitacao in listaDeLicitacoes:
+            if ctCO[20].replace('"',"") == licitacao['numero_licitacao'] and ctCO[19] == licitacao["data_realizacao_autuacao_licitacao"].replace('"',"").replace("-",""):
+                licitacaoNoSIM = True
+                break
+            
+        for licitacaoLI in dataLI:
+            if ctCO[20].replace('"',"") == licitacaoLI[3].replace('"',"") and ctCO[19] == licitacaoLI[2]:
+                licitacaoNoArquivoLI = True
+                break
+            
+        if licitacaoNoSIM and licitacaoNoArquivoLI:
+            print("Licitacao " + ctCO[20].replace('"',"") + " na linha " + str(x) + " do arquivo LI está duplicada.")
+            
+        elif licitacaoNoSIM == False and licitacaoNoArquivoLI:
+            print("Linha ok")
+            
+        elif licitacaoNoSIM == False and licitacaoNoArquivoLI == False:
+            print("Licitacao " + ctCO[20].replace('"',"") + " na linha " + str(x) +  " do arquivo CO está invalida. Não consta na API nem no LI")
+        
+        else:
             break
         
-        
-    #Checando Licitacao
-    # licitacaoNaoExiste = True
-    # while licitacaoNaoExiste:        
-    #     for i, licitacao in enumerate(listaDeLicitacoes, start=1):
-    #         if data[26].replace('"',"") == licitacao['numero_licitacao'] and data[27].replace('"',"") == licitacao['data_realizacao_autuacao_licitacao'].replace("-",""):
-    #             licitacaoNaoExiste = False
-                
-    #     if licitacaoNaoExiste == False:
-    #         break
-        
-    #     elif licitacaoNaoExiste == True:
-    #         licitacoesNaoExistentes.append(data[24].replace('"',""))
-    #         break
-            
-print("Contratos inexistentes" + str(contratosNaoExistentes))
-print("Licitacoes inexistentes" + str(licitacoesNaoExistentes))
+        break
+
 os.system("PAUSE")

@@ -1,15 +1,17 @@
 from pathlib import Path
 import os
 
-nes = 'NE'
+municipio = ''
+
+nes = 'NE2'
 listaDeNEsNaPasta = []
 dataNE = []
 
-lis = 'LI'
+lis = 'LI2'
 listaDeLIsNaPasta = []
 dataLI = []
 
-cos = 'CO'
+cos = 'CO2'
 listaDeCOsNaPasta = []
 dataCO = []
 
@@ -30,25 +32,11 @@ for ne in listaDeNEsNaPasta:
         while linhasDoArquivo:
             dataNE.append(linhasDoArquivo.split(","))
             linhasDoArquivo = arquivoNE.readline()
-
-#Arquivo LI
-if pathLote.exists():
-    for f in os.listdir(pathLote):
-        if lis in f:
-            listaDeLIsNaPasta.append(f)
-        
-for li in listaDeLIsNaPasta:
-    with open(caminho + li, "r") as arquivoLI:
-        linhasDoArquivo = arquivoLI.readline()
-        while linhasDoArquivo:
-            dataLI.append(linhasDoArquivo.split(","))
-            linhasDoArquivo = arquivoLI.readline()
-
 #Arquivo CO
 if pathLote.exists():
-    for f in os.listdir(pathLote):
-        if cos in f:
-            listaDeCOsNaPasta.append(f)
+    for h in os.listdir(pathLote):
+        if cos in h:
+            listaDeCOsNaPasta.append(h)
         
 for co in listaDeCOsNaPasta:
     with open(caminho + co, "r") as arquivoCO:
@@ -56,3 +44,18 @@ for co in listaDeCOsNaPasta:
         while linhasDoArquivo:
             dataCO.append(linhasDoArquivo.split(","))
             linhasDoArquivo = arquivoCO.readline()
+            
+#Arquivo LI
+if pathLote.exists():
+    for g in os.listdir(pathLote):
+        if lis in g:
+            listaDeLIsNaPasta.append(g)
+        
+for li in listaDeLIsNaPasta:
+    with open(caminho + li, "r") as arquivoLI:
+        linhasDoArquivo = arquivoLI.readline()
+        while linhasDoArquivo:
+            dataLI.append(linhasDoArquivo.split(","))
+            linhasDoArquivo = arquivoLI.readline()
+            
+municipio = dataNE[0][1].replace('"',"")
