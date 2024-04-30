@@ -8,18 +8,39 @@ licitacoesEmpenhadas = []
 listaDeLicitacoesNoLI = []
 listaDeLicitacoesNoSIMWEB = []
 
-script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
-rel_path = "arquivos/"
-caminho = os.path.join(script_dir, rel_path)
-pathLote = Path(caminho)
+#Buscando arquivo local
+# script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+# rel_path = "arquivos/"
+# caminho = os.path.join(script_dir, rel_path)
+# pathLote = Path(caminho)
 
-with open(caminho + 'contratos.json', encoding="utf-8") as arquivo:
-    dados = json.load(arquivo)
-listaDeContratos = dados['data']
+# with open(caminho + 'contratos.json', encoding="utf-8") as arquivo:
+#     dados = json.load(arquivo)
+# listaDeContratos = dados['data']
 
-with open(caminho + 'licitacoes.json', encoding="utf-8") as arquivo:
-    dados = json.load(arquivo)
-listaDeLicitacoes = dados['data']
+# with open(caminho + 'licitacoes.json', encoding="utf-8") as arquivo:
+#     dados = json.load(arquivo)
+# listaDeLicitacoes = dados['data']
+
+# Buscando na API
+try:
+    rLicitacao = requests.get('https://api-dados-abertos.tce.ce.gov.br/licitacoes?codigo_municipio=' + municipio + '&data_realizacao_autuacao_licitacao=2010-01-01_2030-12-31')
+    rContratos = requests.get('https://api-dados-abertos.tce.ce.gov.br/contrato?codigo_municipio=' + municipio + '&data_contrato=2010-01-01_2030-12-31&quantidade=0&deslocamento=0')
+except:
+    print("Tentando conexao com API TCE...")
+    try:
+        rLicitacao = requests.get('https://api-dados-abertos.tce.ce.gov.br/licitacoes?codigo_municipio=' + municipio + '&data_realizacao_autuacao_licitacao=2010-01-01_2030-12-31')
+        rContratos = requests.get('https://api-dados-abertos.tce.ce.gov.br/contrato?codigo_municipio=' + municipio + '&data_contrato=2010-01-01_2030-12-31&quantidade=0&deslocamento=0')
+    except:
+        print("Não foi possivel conectar-se a API.")
+        os.system("PAUSE")
+        quit()
+        
+json = rLicitacao.json()
+listaDeLicitacoes = json['data']
+
+json = rContratos.json()
+listaDeContratos = json['data']
 
 #Checando licitacao
 for licitacaoLI in dataLI:
@@ -112,3 +133,5 @@ for x, dadosCO in enumerate(dataNE, start=1):
             pass
         
         break
+    
+os.system("PAUSE")
